@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain;
@@ -11,11 +12,18 @@ namespace Application.Activities
     {
         public class Command : IRequest
         {
+            [Required]
             public string Title { get; set; }
+            [Required,MinLength(3),MaxLength(60)]
             public string Description { get; set; }
+            [Required]
             public string Category { get; set; }
+            [Required]
+            [DataType(DataType.Date)]
             public DateTime Date { get; set; }
+            [Required]
             public string City { get; set; }
+            [Required]
             public string Venue { get; set; }
         }
 
