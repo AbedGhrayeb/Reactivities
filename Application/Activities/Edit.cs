@@ -3,7 +3,9 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Errors;
+using Application.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 namespace Application.Activities
@@ -12,7 +14,7 @@ namespace Application.Activities
     {
         public class Command:IRequest
         {
-            public int Id { get; set; }
+            public Guid Id { get; set; }
              public string Title { get; set; }
             public string Description { get; set; }
             public string Category { get; set; }
@@ -24,10 +26,12 @@ namespace Application.Activities
         public class Handler : IRequestHandler<Command>
         {
             private readonly DataContext _context;
+            private readonly IUserAccessor _userAccessor;
 
-            public Handler(DataContext context)
+            public Handler(DataContext context,IUserAccessor userAccessor)
             {
                 _context = context;
+                _userAccessor = userAccessor;
             }
 
             public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
@@ -37,6 +41,13 @@ namespace Application.Activities
                 {
                     throw new RestException(HttpStatusCode.NotFound,new {msg="Activity Not Found"});
                 }
+                var user = await _context.Users.SingleOrDefaultAsync(x => x.UserName == _userAccessor.CurrentUsername());
+                var attendee =await _context.UserActivities.SingleOrDefaultAsync(x=>
+                    x.ActivityId==activity.Id && x.UserId==user.Id);
+                    if (attendee == null)
+                    {
+                        throw new RestException(HttpStatusCode.NotFound,new {msg="You can not update this activity"});
+                    }
                 activity.Title=request.Title??activity.Title;
                 activity.Description=request.Description??activity.Description;
                 activity.City=request.City??activity.City;

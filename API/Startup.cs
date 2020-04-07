@@ -1,6 +1,8 @@
 using API.Middleware;
 using Application.Activities;
 using Application.Interfaces;
+using Application.Profiles;
+using AutoMapper;
 using Domain;
 using Infrastructure.Security;
 using MediatR;
@@ -34,6 +36,7 @@ namespace API
             //add dbcontext
             services.AddDbContext<DataContext>(opt=>{
                 opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+               // opt.UseLazyLoadingProxies();
             });
             //Add Cors
             services.AddCors(options=>{
@@ -45,6 +48,12 @@ namespace API
             });
             //add mediarR
             services.AddMediatR(typeof(List.Handler).Assembly);
+            //add automapper config
+            /*var mappingConfig = new MapperConfiguration(map =>
+                 map.AddProfile(new MappingProfile()));
+            services.AddSingleton(mappingConfig.CreateMapper());*/
+            services.AddAutoMapper(typeof(List.Handler));
+            
             //add Ideintity
             var builder = services.AddDefaultIdentity<AppUser>(opt=> 
             {
