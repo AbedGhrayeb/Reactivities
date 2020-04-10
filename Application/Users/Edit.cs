@@ -1,4 +1,5 @@
-﻿using Application.Errors;
+﻿using System.Linq;
+using Application.Errors;
 using Application.Interfaces;
 using Domain;
 using MediatR;
@@ -52,7 +53,7 @@ namespace Application.Users
                         Username = user.UserName,
                         Email = user.Email,
                         Token = _jwtJenerator.CreateToken(user),
-                        Image = null
+                        Image = user.Photos.FirstOrDefault(x=>x.IsMain)?.Url
                     };
                 }
                 throw new Exception("Proplem Saving Changes");

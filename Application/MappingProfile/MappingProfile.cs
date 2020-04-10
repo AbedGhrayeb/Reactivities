@@ -1,11 +1,10 @@
-﻿using Application.Activities.Dtos;
+﻿using System.Linq;
+using Application.Activities.Dtos;
 using AutoMapper;
 using Domain;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Application.Profiles
+
+namespace Application.MappingProfile
 {
     public class MappingProfile:Profile
     {
@@ -14,7 +13,8 @@ namespace Application.Profiles
             CreateMap<Activity, ActivityDto>();
             CreateMap<UserActivity, AttendeeDto>()
                 .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src => src.User.DisplayName))
-                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.UserName));
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.UserName))
+                .ForMember(dest=> dest.Image,opt => opt.MapFrom(src=>src.User.Photos.FirstOrDefault(x=>x.IsMain).Url));
         }
         
     }

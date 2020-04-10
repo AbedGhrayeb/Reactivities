@@ -1,9 +1,10 @@
 using API.Middleware;
 using Application.Activities;
 using Application.Interfaces;
-using Application.Profiles;
+using Application.MappingProfile;
 using AutoMapper;
 using Domain;
+using Infrastructure.Photos;
 using Infrastructure.Security;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -36,7 +37,7 @@ namespace API
             //add dbcontext
             services.AddDbContext<DataContext>(opt=>{
                 opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
-               // opt.UseLazyLoadingProxies();
+               opt.UseLazyLoadingProxies();
             });
             //Add Cors
             services.AddCors(options=>{
@@ -49,11 +50,11 @@ namespace API
             //add mediarR
             services.AddMediatR(typeof(List.Handler).Assembly);
             //add automapper config
-            /*var mappingConfig = new MapperConfiguration(map =>
+            var mappingConfig = new MapperConfiguration(map =>
                  map.AddProfile(new MappingProfile()));
-            services.AddSingleton(mappingConfig.CreateMapper());*/
-            services.AddAutoMapper(typeof(List.Handler));
-            
+            services.AddSingleton(mappingConfig.CreateMapper());
+            //services.AddAutoMapper(typeof(List.Handler));
+
             //add Ideintity
             var builder = services.AddDefaultIdentity<AppUser>(opt=> 
             {
@@ -66,8 +67,10 @@ namespace API
             var IdentityBuilder = new IdentityBuilder(builder.UserType,builder.Services);
             IdentityBuilder.AddEntityFrameworkStores<DataContext>();
             IdentityBuilder.AddSignInManager<SignInManager<AppUser>>();
-            
+
+            services.Configure<CloudinarySettings>(Configuration.GetSection("Cloudinary"));
             services.AddScoped<IUserAccessor, UserAccessor>();
+            services.AddScoped<IPhotoAccessor,PhotoAccessor>();
             //Token
             services.AddScoped<IJwtJenerator, JwtJenerator>();
 
