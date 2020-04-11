@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Persistence;
 
 namespace Persistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20200410023052_AddCommentoEntity")]
+    partial class AddCommentoEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -115,7 +117,7 @@ namespace Persistence.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("Domain.Comment", b =>
+            modelBuilder.Entity("Domain.Comments", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -182,21 +184,6 @@ namespace Persistence.Migrations
                     b.HasIndex("ActivityId");
 
                     b.ToTable("UserActivities");
-                });
-
-            modelBuilder.Entity("Domain.UserFollowing", b =>
-                {
-                    b.Property<string>("TargetId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ObserverId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("TargetId", "ObserverId");
-
-                    b.HasIndex("ObserverId");
-
-                    b.ToTable("Followings");
                 });
 
             modelBuilder.Entity("Domain.Value", b =>
@@ -392,21 +379,6 @@ namespace Persistence.Migrations
                         .WithMany("UserActivities")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Domain.UserFollowing", b =>
-                {
-                    b.HasOne("Domain.AppUser", "Observer")
-                        .WithMany("Followings")
-                        .HasForeignKey("ObserverId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Domain.AppUser", "Target")
-                        .WithMany("Followers")
-                        .HasForeignKey("TargetId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

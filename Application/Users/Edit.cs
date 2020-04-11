@@ -11,6 +11,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace Application.Users
 {
@@ -18,8 +19,10 @@ namespace Application.Users
     {
         public class Command : IRequest<User> 
         {
+            [Required]
             public string DisplayName { get; set; }
             public string Email { get; set; }
+            public string Bio { get; set; }
         }
         public class Handler : IRequestHandler<Command, User>
         {
@@ -37,7 +40,7 @@ namespace Application.Users
             {
                 var user = await _userManager.FindByNameAsync(_userAccessor.CurrentUsername());
                 user.DisplayName = request.DisplayName ?? user.DisplayName;
-
+                user.Bio=request.Bio ?? user.Bio;
                     if ((await _userManager.Users.AnyAsync(x=>x.Email==request.Email)
                         && request.Email!= user.Email))
                     {

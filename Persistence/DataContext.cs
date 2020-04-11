@@ -1,4 +1,5 @@
-﻿using Domain;
+﻿using System.Security.Cryptography.X509Certificates;
+using Domain;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 namespace Persistence
@@ -13,7 +14,8 @@ namespace Persistence
         public DbSet<Activity> Activities { get; set; }
         public DbSet<UserActivity> UserActivities { get; set; }
         public DbSet<Photo> Photos { get; set; }
-
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<UserFollowing> Followings {get; set;}
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -36,6 +38,20 @@ namespace Persistence
                 .WithMany(ua => ua.UserActivities)
                 .HasForeignKey(a => a.ActivityId);
 
+            builder.Entity<UserFollowing>(x=>
+            {
+                x.HasKey(key=>new{key.TargetId,key.ObserverId});
+
+                x.HasOne(o=>o.Observer)
+                .WithMany(t=>t.Followings)
+                .HasForeignKey(o=>o.ObserverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+                x.HasOne(t=>t.Target)
+                .WithMany(o=>o.Followers)
+                .HasForeignKey(k=>k.TargetId)
+                .OnDelete(DeleteBehavior.Restrict);
+            });
         }
     }
 }

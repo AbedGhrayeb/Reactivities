@@ -1,7 +1,9 @@
 using API.Middleware;
+using API.SignalR;
 using Application.Activities;
 using Application.Interfaces;
 using Application.MappingProfile;
+using Application.Profiles;
 using AutoMapper;
 using Domain;
 using Infrastructure.Photos;
@@ -18,7 +20,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
+using System;
 using System.Text;
+using System.Threading.Tasks;
+using List = Application.Activities.List;
 
 namespace API
 {
@@ -71,6 +76,8 @@ namespace API
             services.Configure<CloudinarySettings>(Configuration.GetSection("Cloudinary"));
             services.AddScoped<IUserAccessor, UserAccessor>();
             services.AddScoped<IPhotoAccessor,PhotoAccessor>();
+            services.AddScoped<IProfileReader,ProfileReader>();
+            services.AddSignalR();
             //Token
             services.AddScoped<IJwtJenerator, JwtJenerator>();
 
@@ -84,6 +91,20 @@ namespace API
                         IssuerSigningKey = key,
                         ValidateAudience = false,
                         ValidateIssuer = false
+                    };
+                    options.Events= new JwtBearerEvents
+                    {
+                        OnMessageReceived = context=>
+                        {
+                            var accessToken = context.Request.Query["access-token"];
+                            var path = context.HttpContext.Request.Path;
+                            if (!String.IsNullOrEmpty(accessToken) &&
+                                 (path.StartsWithSegments("/chat")))
+                            {
+                                context.Token=accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 
@@ -111,6 +132,7 @@ namespace API
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseCors("CorsPolicy");
+            app.UseEndpoints(route=> {route.MapHub<ChatHub>("/chat");});
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
